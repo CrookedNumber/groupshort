@@ -51,7 +51,7 @@ function groupshort_form(&$node, $form_state) {
     '#title' => t('Code'),
     '#description' => t('Enter your desired code for your alias. Numbers, letters, and underscores only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a code, one will be auto-generated for you.'),
     '#default_value' => isset($node->code) ? $node->code : '',
-    '#weight' => 5,
+    '#weight' => -4,
     '#maxlength' => 255,
   );
   return $form;
