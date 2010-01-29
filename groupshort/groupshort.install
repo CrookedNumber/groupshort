@@ -1,0 +1,49 @@
+<?php
+/**
+ * Implementation of hook_install().
+ */
+function groupshort_install() {
+  drupal_install_schema('groupshort');
+}
+ 
+/**
+ * Implementation of hook_uninstall().
+ */
+function groupshort_uninstall() {
+  //Use schema API to delete database table.
+  drupal_uninstall_schema('groupshort');
+}
+ 
+/**
+*Implementation of hook_schema().
+*/
+function groupshort_schema() {
+  $schema['groupshort_links'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("The shortlink's {node}.nid."),
+      ),
+      'vid' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => t("The shortlink's {node_revisions}.vid."),
+      ),
+      'code' => array('type' => 'varchar', 'length' => 64, 'not null' => TRUE),
+      'url' => array('type' => 'varchar', 'length' => 256, 'not null' => TRUE),
+    ),
+    'primary key' => array('vid'),
+    'unique keys' => array(
+      'vid' => array('code'),
+      ),
+    'indexes' => array(
+      'code' => array('code'),
+      ),
+  );
+  return $schema;
+}

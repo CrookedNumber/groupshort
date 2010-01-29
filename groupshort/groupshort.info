@@ -1,0 +1,3 @@
+name = groupshort
+description = A user-friendly, node-based local link shortening / aliasing module.
+core = 6.x

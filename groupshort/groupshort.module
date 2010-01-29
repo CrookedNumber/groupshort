@@ -1,0 +1,148 @@
+<?php
+
+/**
+ * Implementation of hook_init().
+ */
+function groupshort_init() {
+  if ($_GET['q']) {
+    $url = db_result(db_query("SELECT url FROM {groupshort_links} WHERE code='%s'", $_GET['q']));
+    if ($url) {
+      drupal_goto($url);
+      exit();
+    }
+  }  
+}
+
+/**
+* Implementation of hook_node_info().
+*/
+function groupshort_node_info() {
+  return array(
+    'groupshort' => array(
+      'name' => t('Short URL'), // Required.
+      'module' => 'groupshort', // Required.
+      'description' => t('A short URL for any longer URL.'), // Required.
+      'has_body' => TRUE,
+      'body_label' => t('Notes'),
+      'locked' => TRUE,
+    )
+  );
+}
+
+/**
+* Implementation of hook_form().
+*/
+function groupshort_form(&$node, $form_state) {
+  
+  $form['title']['#type'] = 'hidden';
+  
+  $form['url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Destination URL'),
+    '#description' => t('Enter full URL, including http:// (or https://).'),
+    '#required' => TRUE,
+    '#default_value' => isset($node->url) ? $node->url : '',
+    '#weight' => -5,
+    '#maxlength' => 255,
+  );
+
+  $form['code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Code'),
+    '#description' => t('Enter your desired code for your alias. Numbers, letters, and underscores only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a code, one will be auto-generated for you.'),
+    '#default_value' => isset($node->code) ? $node->code : '',
+    '#weight' => 5,
+    '#maxlength' => 255,
+  );
+  return $form;
+}
+
+function groupshort_validate($node, &$form) {
+  if (!valid_url($node->url, TRUE)) {
+    form_set_error('url', 'Please enter a valid URL.');
+  }
+  if ($node->code != '' && !ctype_alnum(str_replace('_', '', $node->code))) {
+    form_set_error('code', 'Please use only numbers, letters and underscores.');
+  }
+  if ($node->code != '' && _groupshort_path_taken($node->code) && $node->code != _groupshort_get_code($node->vid)) {
+    form_set_error('code', 'Sorry this code is already taken.');
+  }
+}
+
+function groupshort_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
+  if ($op == 'presave') {
+    if (!$node->code) {
+      $node->code = _groupshort_get_code();
+    }
+    $node->title = $node->code . ' --> ' . $node->url;
+  }
+}
+
+function groupshort_insert(&$node) {
+  $record = new stdClass();
+  $record->code = $node->code;
+  $record->url = $node->url;
+  $record->nid = $node->nid;
+  $record->vid = $node->vid;
+  drupal_write_record('groupshort_links', $record);
+  drupal_set_message(check_url(base_path() . $node->code) . ' now points to ' . $node->url);
+}
+
+function groupshort_load (&$node) {
+  return db_fetch_object(db_query('SELECT code, url FROM {groupshort_links} WHERE vid = %d', $node->vid));
+}
+
+function groupshort_update(&$node) {
+  $record = new stdClass();
+  $record->code = $node->code;
+  $record->url = $node->url;
+  $record->nid = $node->nid;
+  $record->vid = $node->vid;
+  drupal_write_record('groupshort_links', $record, array('vid'));
+  drupal_set_message(check_url(base_path() . $node->code) . ' now points to ' . $node->url);
+}
+
+function groupshort_delete(&$node) {
+  db_query("DELETE FROM {groupshort_links} WHERE nid=%d", $node->nid);
+}
+
+function _groupshort_generate_code($length = 4, $type = 'alphanum') {
+  $output = '';
+  for ($x=1; $x <= $length; $x++) {
+    if ($type == 'alphanum') {
+      $num = rand(1, 36);
+      if ($num > 26) {
+        $num = 21 + $num;
+      }
+      else {
+        $num = 96 + $num;
+      }
+    }
+    if ($type == 'alpha') {
+      $num = chr(rand(97, 122));
+    }
+    $output .= chr($num);
+  }
+  return $output;
+}
+
+function _groupshort_path_taken($path) {
+  $path = trim($path, '/');
+  $exists = db_result(db_query("SELECT code FROM {groupshort_links} WHERE code='%s'", $path));
+  if ($exists) {
+    return TRUE;
+  }
+  return drupal_lookup_path($path);
+}
+
+function _groupshort_get_code ($vid = NULL) {
+  if ($vid) {
+    return db_result(db_query("SELECT code FROM {groupshort_links} WHERE vid=%d", $vid));
+  }
+  while($code = _groupshort_generate_code()) {
+    if (_groupshort_path_taken($code)) {
+      continue;
+    }
+    return $code;
+  }
+}
