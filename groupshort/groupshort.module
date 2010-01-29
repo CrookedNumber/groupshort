@@ -73,6 +73,16 @@ function groupshort_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if ($op == 'presave') {
     if (!$node->code) {
       $node->code = _groupshort_get_code();
+      // Returns unique, random code
+      // yes, I'm aware that this *could* lead to a collision
+      // and that, done properly, we'd use some sort of
+      // alphanumeric auto-increment (see shorturl module)
+      // or, better yet, a database transaction (!)
+      //
+      // But I'm willing to take the chance that
+      // a number (in the range 1 and 36^4)
+      // won't come up twice in the span of a few hundred (if that?)
+      // milliseconds
     }
     $node->title = $node->code . ' --> ' . $node->url;
   }
@@ -136,9 +146,10 @@ function _groupshort_path_taken($path) {
 }
 
 function _groupshort_get_code ($vid = NULL) {
-  if ($vid) {
+  if ($vid) { // if we already know vid, send corresponding code, or FALSE if ! exists
     return db_result(db_query("SELECT code FROM {groupshort_links} WHERE vid=%d", $vid));
   }
+  // else generate unique code
   while($code = _groupshort_generate_code()) {
     if (_groupshort_path_taken($code)) {
       continue;
