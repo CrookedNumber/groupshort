@@ -18,9 +18,26 @@ function groupshort_init() {
 */
 function groupshort_perm() {
 
-return array('access groupshort', 'create groupshort', 'administer groupshort');
+	return array('access groupshort', 'create groupshort', 'administer groupshort');
 
 } // function groupshort_perm
+
+/**
+* Implementation of hook_access().
+*/
+function groupshort_access($op, $node, $account) {
+  switch ($op) {
+    case 'create':
+      return user_access('create groupshort', $account) ? TRUE : NULL;
+	}
+}
+/**
+* Implementation of hook_menu().
+*/
+function groupshort_menu() {
+
+} // function groupshort_menu
+
 
 /**
 * Implementation of hook_node_info().
