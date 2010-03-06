@@ -14,6 +14,15 @@ function groupshort_init() {
 }
 
 /**
+* Implementation of hook_perm().
+*/
+function groupshort_perm() {
+
+return array('access groupshort', 'create groupshort', 'administer groupshort');
+
+} // function groupshort_perm
+
+/**
 * Implementation of hook_node_info().
 */
 function groupshort_node_info() {
