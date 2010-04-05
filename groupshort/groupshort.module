@@ -97,6 +97,7 @@ function groupshort_validate($node, &$form) {
 
 function groupshort_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
   if ($op == 'presave') {
+  	if ($node->type != 'groupshort') return;
     if (!$node->code) {
       $node->code = _groupshort_get_code();
       // Returns unique, random code
