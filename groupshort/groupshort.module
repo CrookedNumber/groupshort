@@ -35,6 +35,11 @@ function groupshort_access($op, $node, $account) {
 * Implementation of hook_menu().
 */
 function groupshort_menu() {
+  return array(
+    'groupshort_short_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
 
 } // function groupshort_menu
 
@@ -74,12 +79,22 @@ function groupshort_form(&$node, $form_state) {
 
   $form['code'] = array(
     '#type' => 'textfield',
-    '#title' => t('Code'),
-    '#description' => t('Enter your desired code for your alias. Numbers, letters, and underscores only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a code, one will be auto-generated for you.'),
+    '#title' => t('Shortcut'),
+    '#description' => t('Enter your desired shortcut for your alias. Numbers, letters, and underscores only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a shortcut, one will be auto-generated for you.'),
     '#default_value' => isset($node->code) ? $node->code : '',
     '#weight' => -4,
     '#maxlength' => 255,
   );
+  
+  $form['body_filter']['body'] = array(
+    '#type' => 'textarea',
+    '#title' => check_plain($type->body_label),
+    '#default_value' => $node->body,
+    '#rows' => 7,
+    '#required' => TRUE,
+  );
+  $form['body_filter']['filter'] = filter_form($node->format);
+  
   return $form;
 }
 
@@ -111,7 +126,7 @@ function groupshort_nodeapi(&$node, $op, $a3 = NULL, $a4 = NULL) {
       // won't come up twice in the span of a few hundred (if that?)
       // milliseconds
     }
-    $node->title = $node->code . ' --> ' . $node->url;
+    $node->title = $node->code;
   }
 }
 
@@ -124,6 +139,24 @@ function groupshort_insert(&$node) {
   drupal_write_record('groupshort_links', $record);
   drupal_set_message(check_url(base_path() . $node->code) . ' now points to ' . $node->url);
 }
+
+function groupshort_view($node, $teaser = FALSE, $page = FALSE) {
+	dpm('view');
+  $node = node_prepare($node, $teaser);
+	$node->content['show_url'] = array(
+	  '#value' => theme('short_info', $node),
+	  '#weight' => 2,
+	);
+	dpm($node);
+	return $node;
+}
+
+function theme_short_info($node) {
+	dpm('theme');
+	$output = '<div class="short_info">' . check_url(base_path() . $node->code) . ' points to ' . check_url($node->url) . '</div>';
+	return $output;
+}
+
 
 function groupshort_load (&$node) {
   return db_fetch_object(db_query('SELECT code, url FROM {groupshort_links} WHERE vid = %d', $node->vid));
