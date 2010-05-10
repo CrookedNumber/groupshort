@@ -65,6 +65,8 @@ function groupshort_node_info() {
 */
 function groupshort_form(&$node, $form_state) {
   
+  $type = node_get_types('type', $node);
+  
   $form['title']['#type'] = 'hidden';
   
   $form['url'] = array(
@@ -86,14 +88,13 @@ function groupshort_form(&$node, $form_state) {
     '#maxlength' => 255,
   );
   
-  $form['body_filter']['body'] = array(
-    '#type' => 'textarea',
-    '#title' => check_plain($type->body_label),
-    '#default_value' => $node->body,
-    '#rows' => 7,
-    '#required' => TRUE,
-  );
-  $form['body_filter']['filter'] = filter_form($node->format);
+  if ($type->has_body) {
+    // In Drupal 6, we can use node_body_field() to get the body and filter
+    // elements. This replaces the old textarea + filter_form() method of
+    // setting this up. It will also ensure the teaser splitter gets set up
+    // properly.
+    $form['body_field'] = node_body_field($node, $type->body_label, $type->min_word_count);
+  }
   
   return $form;
 }
