@@ -80,7 +80,7 @@ function groupshort_form(&$node, $form_state) {
   $form['code'] = array(
     '#type' => 'textfield',
     '#title' => t('Shortcut'),
-    '#description' => t('Enter your desired shortcut for your alias. Numbers, letters, and underscores only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a shortcut, one will be auto-generated for you.'),
+    '#description' => t('Enter your desired shortcut for your alias. Numbers, letters, and hyphens only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a shortcut, one will be auto-generated for you.'),
     '#default_value' => isset($node->code) ? $node->code : '',
     '#weight' => -4,
     '#maxlength' => 255,
@@ -102,8 +102,8 @@ function groupshort_validate($node, &$form) {
   if (!valid_url($node->url, TRUE)) {
     form_set_error('url', 'Please enter a valid URL.');
   }
-  if ($node->code != '' && !ctype_alnum(str_replace('_', '', $node->code))) {
-    form_set_error('code', 'Please use only numbers, letters and underscores.');
+  if ($node->code != '' && !ctype_alnum(str_replace('-', '', $node->code))) {
+    form_set_error('code', 'Please use only numbers, letters and hyphens.');
   }
   if ($node->code != '' && _groupshort_path_taken($node->code) && $node->code != _groupshort_get_code($node->vid)) {
     form_set_error('code', 'Sorry this code is already taken.');
