@@ -82,7 +82,7 @@ function groupshort_form(&$node, $form_state) {
   $form['code'] = array(
     '#type' => 'textfield',
     '#title' => t('Shortcut'),
-    '#description' => t('Enter your desired shortcut for your alias. Numbers, letters, and hyphens only, please. No slashes. It will be appended to your site\'s URL. If you do not supply a shortcut, one will be auto-generated for you.'),
+    '#description' => t('Enter your desired shortcut for your alias. Numbers, letters, and hyphens only, please. No slashes. If you do not supply a shortcut, one will be auto-generated for you.'),
     '#default_value' => isset($node->code) ? $node->code : '',
     '#weight' => -4,
     '#maxlength' => 255,
@@ -140,21 +140,26 @@ function groupshort_insert(&$node) {
   drupal_write_record('groupshort_links', $record);
   drupal_set_message(check_url(base_path() . $node->code) . ' now points to ' . $node->url);
 }
+function groupshort_theme() {
+  return array(
+    'short_info' => array(
+      'arguments' => array('node'),
+    ),
+  );
+}
 
 function groupshort_view($node, $teaser = FALSE, $page = FALSE) {
-	dpm('view');
   $node = node_prepare($node, $teaser);
-	$node->content['show_url'] = array(
+	$node->content['code'] = array(
 	  '#value' => theme('short_info', $node),
 	  '#weight' => 2,
 	);
-	dpm($node);
 	return $node;
 }
 
 function theme_short_info($node) {
-	dpm('theme');
-	$output = '<div class="short_info">' . check_url(base_path() . $node->code) . ' points to ' . check_url($node->url) . '</div>';
+	$fullurl = check_url($GLOBALS['base_url'] . '/' . $node->code);
+	$output = '<div class="short_info">' . l($fullurl,$fullurl) . '<br>now points to:<br>' . l($node->url,check_url($node->url)) . '</div>';
 	return $output;
 }
 
@@ -217,4 +222,15 @@ function _groupshort_get_code ($vid = NULL) {
     }
     return $code;
   }
+}
+
+
+/**
+ * Implementation of hook_views_api().
+ */
+function groupshort_views_api() {
+  return array(
+    'api' => 2.0,
+    'path' => drupal_get_path('module', 'groupshort') . '/includes',
+  );
 }
