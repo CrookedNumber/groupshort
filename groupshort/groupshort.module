@@ -18,7 +18,7 @@ function groupshort_init() {
 */
 function groupshort_perm() {
 
-	return array('access groupshort', 'create groupshort', 'administer groupshort');
+	return array('access groupshort', 'create groupshort', 'administer groupshort', 'edit own groupshort', 'delete own groupshort');
 
 } // function groupshort_perm
 
@@ -29,6 +29,12 @@ function groupshort_access($op, $node, $account) {
   switch ($op) {
     case 'create':
       return user_access('create groupshort', $account) ? TRUE : NULL;
+    break;
+    case 'update':
+    	return user_access('edit own groupshort', $account) ? TRUE : NULL;
+    break;
+    case 'delete':
+    	return user_access('delete own groupshort', $account) ? TRUE : NULL;
 	}
 }
 /**
