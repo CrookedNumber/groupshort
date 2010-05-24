@@ -77,7 +77,7 @@ function groupshort_form(&$node, $form_state) {
   
   $form['url'] = array(
     '#type' => 'textfield',
-    '#title' => t('Destination URL'),
+    '#title' => t('URL you would like to shorten'),
     '#description' => t('Enter full URL, including http:// (or https://).'),
     '#required' => TRUE,
     '#default_value' => isset($node->url) ? $node->url : '',
@@ -165,7 +165,7 @@ function groupshort_view($node, $teaser = FALSE, $page = FALSE) {
 
 function theme_short_info($node) {
 	$fullurl = check_url($GLOBALS['base_url'] . '/' . $node->code);
-	$output = '<div class="short_info">' . l($fullurl,$fullurl) . '<br>now points to:<br>' . l($node->url,check_url($node->url)) . '</div>';
+	$output = '<div class="short_info"><p class="gs_fullurl">' . l($fullurl,$fullurl) . '</p><p>now points to:<br>' . $node->url . '</div>';
 	return $output;
 }
 
