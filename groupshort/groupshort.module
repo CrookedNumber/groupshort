@@ -4,6 +4,7 @@
  * Implementation of hook_init().
  */
 function groupshort_init() {
+	drupal_add_css(drupal_get_path('module', 'groupshort') .'/css/gs.css'));
   if ($_GET['q']) {
     $url = db_result(db_query("SELECT url FROM {groupshort_links} WHERE code='%s'", $_GET['q']));
     if ($url) {
